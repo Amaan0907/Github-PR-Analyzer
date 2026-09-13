@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+       POSTGRES_USER: pr_analyzer
+       POSTGRES_PASSWORD: pr_analyzer_password
+       POSTGRES_DB: pr_analyzer_db
+    ports:
+      - "5432:5432"
+       
+  redis:
+    image: redis:8
+    ports:
+      - "6379:6379"
