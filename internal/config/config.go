@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -13,6 +15,7 @@ type Config struct {
 }
 
 func Load() Config {
+	_=godotenv.Load()
 	return Config{
 		Port: requiredEnv("PORT"),
 		DatabaseUrl: requiredEnv("DATABASE_URL"),
