@@ -6,11 +6,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Store struct {
-	DB *pgxpool.Pool
-}
 
-func New(ctx context.Context,databaseURL string)(*Store ,error){
+func NewPostgres(ctx context.Context,databaseURL string)(*pgxpool.Pool ,error){
 	pool,err:=pgxpool.New(ctx,databaseURL)
 
 	if err!=nil{
@@ -22,12 +19,7 @@ func New(ctx context.Context,databaseURL string)(*Store ,error){
 		return nil,err
 	}
 
-	return &Store{
-		DB:pool,
-	},nil
+	return pool,nil
 }
 
 
-func(s *Store) Close(){
-	s.DB.Close()
-}

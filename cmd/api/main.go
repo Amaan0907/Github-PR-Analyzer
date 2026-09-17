@@ -14,14 +14,14 @@ func main() {
 
 	cfg:=config.Load()
 
-	store,err:=store.New(ctx,cfg.DatabaseUrl)
+	db,err:=store.New(ctx,cfg.DatabaseUrl,cfg.RedisUrl)
 
 	if err!=nil{
 		log.Fatal(err)
 	}
 	fmt.Println("Connect to DataBase extablished")
-	defer store.Close()
+	defer db.Close()
 
-
+	
 
 }
