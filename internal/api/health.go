@@ -23,16 +23,24 @@ func Readyz(s *store.Store) gin.HandlerFunc{
 
 
 		status:=gin.H{}
-		ready:=true
+		DBready:=true
+		RedisReady:=true
 
 		if err:=s.DB.Ping(ctx);err!=nil{
 			status["database"]="down"
-			ready=false
+			DBready=false
 		}else{
 			status["database"]="up"
 		}
 
-		if!ready{
+		if err:=s.Redis.Ping(ctx).Err();err!=nil{
+			status["redis"]="down"
+			RedisReady=false
+		}else{
+			status["redis"]="up"
+		}
+
+		if!DBready || !RedisReady{
 			c.JSON(http.StatusServiceUnavailable,status)
 			return 
 		}

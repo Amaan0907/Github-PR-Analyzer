@@ -15,4 +15,4 @@ CREATE TABLE repositories(
 
     CONSTRAINT uq_repositories_owner_name
         UNIQUE (owner,name)
-)
+);
