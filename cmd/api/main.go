@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -13,10 +13,11 @@ import (
 	"github.com/Amaan0907/Github-PR-Analyzer/internal/api"
 	"github.com/Amaan0907/Github-PR-Analyzer/internal/config"
 	"github.com/Amaan0907/Github-PR-Analyzer/internal/store"
-	
 )
 
 func main() {
+	logger:=slog.New(slog.NewJSONHandler(os.Stdout,nil))
+	slog.SetDefault(logger)
 	ctx,stop:=signal.NotifyContext(context.Background(),syscall.SIGINT,syscall.SIGTERM)
 
 	defer stop()
@@ -26,13 +27,14 @@ func main() {
 	db,err:=store.New(ctx,cfg.DatabaseUrl,cfg.RedisUrl)
 
 	if err!=nil{
-		log.Fatal(err)
+		logger.Error("failed to connect to store","error",err)
+		os.Exit(1)
 	}
-	fmt.Println("Connect to DataBase extablished")
+	logger.Info("Connection to Database established")
 	defer db.Close()
 
 
-	router:=api.NewRouter(db)
+	router:=api.NewRouter(db,logger)
 	
 
 	srv:=&http.Server{
@@ -41,15 +43,16 @@ func main() {
 	}
 
 	go func(){
-		log.Printf("Listening on %s",srv.Addr)
+		logger.Info("listening","addr",srv.Addr)
 		if err:=srv.ListenAndServe();err!=nil &&!errors.Is(err,http.ErrServerClosed){
-			log.Fatal("server error: %v",err)
+			logger.Error("server error","error",err)
+			os.Exit(1)
 		}
 	}()
 
 	<-ctx.Done()
 
-	log.Println("shutdown signal received")
+	logger.Info("shutdown signal received")
 
 
 	shutdownCtx,cancel:=context.WithTimeout(context.Background(),10*time.Second)
@@ -57,7 +60,7 @@ func main() {
 	defer  cancel()
 
 	if err :=srv.Shutdown(shutdownCtx);err!=nil{
-		log.Fatalf("Forced shutdown: %v",err)
+		logger.Error("Forced shutdown","error",err)
 	}
-	log.Println("Server exited cleanly")
+	logger.Info("Server exited cleanly")
 }
