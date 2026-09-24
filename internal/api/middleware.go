@@ -29,8 +29,6 @@ func RequestId() gin.HandlerFunc{
 		c.Writer.Header().Set("X-Request-ID",id)
 		c.Next()
 
-
-
 	}
 }
 
