@@ -7,8 +7,33 @@ services:
        POSTGRES_DB: pr_analyzer_db
     ports:
       - "5430:5432"
-       
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pr_analyzer -d pr_analyzer_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   redis:
     image: redis:8
     ports:
       - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://pr_analyzer:pr_analyzer_password@postgres:5432/pr_analyzer_db?sslmode=disable
+      REDIS_URL: redis://redis:6379
+      ENVIRONMENT: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
